@@ -1,12 +1,12 @@
 import './App.css'
-
+import { Box } from '@chakra-ui/react';
 function App() {
 
-  return (
+return (
     <>
-      <h1>Fitness Tracker Dashboard</h1>
+    <Box p= {6} bg="blue.700" fontSize={'3xl'} fontWeight={'bold'} textAlign={'center'} > Chakra is Working</Box>
     </>
-  )
+  );  
 }
 
 export default App
