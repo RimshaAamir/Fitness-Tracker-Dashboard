@@ -1,10 +1,19 @@
 import './App.css'
-import { Box } from '@chakra-ui/react';
+import Dashboard from './pages/Dashboard';
+import ExerciseDetails from './pages/ExerciseDetails';
+import MyWorkouts from './pages/MyWorkouts';
+import {BrowserRouter, Route, Routes} from 'react-router-dom'
 function App() {
 
 return (
     <>
-    <Box p= {6} bg="blue.700" fontSize={'3xl'} fontWeight={'bold'} textAlign={'center'} > Chakra is Working</Box>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Dashboard/>}/>
+        <Route path ="/exercise/:id" element={<ExerciseDetails/>}/>
+        <Route path = "/workouts" element={<MyWorkouts/>}/>
+      </Routes>
+    </BrowserRouter>
     </>
   );  
 }
