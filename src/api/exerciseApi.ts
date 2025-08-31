@@ -22,3 +22,8 @@ export const fetchExerciseById = async (id: string) => {
   const response = await api.get(`/exercises/exercise/${id}`);
   return response.data;
 };
+
+export const fetchExercisesByName = async (name: string) => {
+  const response = await api.get(`/exercises/name/${name}`);
+  return response.data;
+};  
