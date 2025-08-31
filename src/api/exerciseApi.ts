@@ -27,3 +27,13 @@ export const fetchExercisesByName = async (name: string) => {
   const response = await api.get(`/exercises/name/${name}`);
   return response.data;
 };  
+
+export const fetchExercisesByBodyPart = async (bodyPart: string) => {
+  const response = await api.get(`/exercises/bodyPart/${bodyPart}`);
+  return response.data;
+};
+
+export const fetchExercisesByEquipment = async (equipment: string) => {
+  const response = await api.get(`/exercises/equipment/${equipment}`);
+  return response.data;
+};

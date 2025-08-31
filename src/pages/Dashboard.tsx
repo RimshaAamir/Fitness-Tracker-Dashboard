@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { fetchAllExercises, fetchExercisesByName } from "../api/exerciseApi";
-import { Box, Spinner, SimpleGrid, Text, Input } from "@chakra-ui/react";
+import { fetchAllExercises, fetchExercisesByName, fetchExercisesByBodyPart, fetchExercisesByEquipment } from "../api/exerciseApi";
+import { Box, Spinner, SimpleGrid, Text, Input, VStack } from "@chakra-ui/react";
+import { Select } from "@chakra-ui/select";
 
 interface Exercise {
   id: string;
@@ -14,42 +15,79 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [bodyPart, setBodyPart] = useState("");
+  const [equipment, setEquipment] = useState("");
 
   useEffect(() => {
     const loadExercises = async () => {
       setLoading(true);
       try {
         let data;
-        if(search){
+        if (search) {
           data = await fetchExercisesByName(search);
-        } else{
+        } else if (bodyPart) {
+          data = await fetchExercisesByBodyPart(bodyPart);
+        } else if (equipment) {
+          data = await fetchExercisesByEquipment(equipment);
+        } else {
           data = await fetchAllExercises();
         }
         setExercises(data.slice(0, 10));
         setError(null);
       } catch (err) {
-        setError("Failed to fetch exercises");
+        setError("Can't load exercises");
       } finally {
         setLoading(false);
       }
     };
-
     loadExercises();
-  }, [search]);
-
+  }, [search, bodyPart, equipment]);
 
   return (
-    <Box p={6}>
-      <Text fontSize="2xl" mb={4} fontWeight="bold">
+    <Box p={4}>
+      <Text fontSize="xl" fontWeight="bold">
         Exercises
       </Text>
-      <Input
-        placeholder="Search for exercises (e.g., pushups)"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        mt={2}
-        maxW="300px"
-      />
+      <VStack align="start" mt={2}>
+        <Input
+          placeholder="Search for exercises (e.g., pushups)"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setBodyPart(""); 
+            setEquipment("");
+          }}
+          maxW="300px"
+        />
+        <Select
+          placeholder="Filter by body part"
+          value={bodyPart}
+          onChange={(e) => {
+            setBodyPart(e.target.value);
+            setSearch("");
+            setEquipment("");
+          }}
+          maxW="300px"
+        >
+          <option value="chest">Chest</option>
+          <option value="legs">Legs</option>
+          <option value="back">Back</option>
+        </Select>
+        <Select
+          placeholder="Filter by equipment"
+          value={equipment}
+          onChange={(e) => {
+            setEquipment(e.target.value);
+            setSearch(""); 
+            setBodyPart("");
+          }}
+          maxW="300px"
+        >
+          <option value="dumbbell">Dumbbell</option>
+          <option value="bodyweight">Bodyweight</option>
+          <option value="barbell">Barbell</option>
+        </Select>
+      </VStack>
       {loading && <Spinner mt={4} />}
       {error && <Text color="red" mt={2}>{error}</Text>}
       {!loading && !error && exercises.length === 0 && (
@@ -57,7 +95,7 @@ function Dashboard() {
       )}
       <SimpleGrid columns={[1, 2]} mt={4}>
         {exercises.map((exercise) => (
-          <Box key={exercise.id} p={4} borderWidth="1px" rounded="lg" shadow="md">
+          <Box key={exercise.id} p={3} borderWidth="1px" rounded="md">
             <Text fontWeight="bold">{exercise.name}</Text>
             <Text>Target: {exercise.target}</Text>
             <Text>Equipment: {exercise.equipment}</Text>
@@ -68,4 +106,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard
+export default Dashboard;
