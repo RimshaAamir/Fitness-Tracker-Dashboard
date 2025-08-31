@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { fetchAllExercises, fetchExercisesByName, fetchExercisesByBodyPart, fetchExercisesByEquipment, fetchEquipmentList, fetchTargetList, fetchBodyPartList  } from "../api/exerciseApi";
 import { Box, Spinner, SimpleGrid, Text, Input, VStack } from "@chakra-ui/react";
 import { Select } from "@chakra-ui/select";
+import { Link } from "react-router-dom";
 
 interface Exercise {
   id: string;
@@ -145,12 +146,14 @@ function Dashboard() {
       )}
       <SimpleGrid columns={[1, 2]} mt={4}>
         {exercises.map((exercise) => (
-          <Box key={exercise.id} p={3} borderWidth="1px" rounded="md">
+          <Link key={exercise.id} to={`/exercise/${exercise.id}`}>
+          <Box p={3} borderWidth="1px" rounded="md" _hover={{ bg: "gray.100" }}>
             <Text fontWeight="bold">{exercise.name}</Text>
             <Text>Body Part: {exercise.bodyPart}</Text>
             <Text>Target: {exercise.target}</Text>
             <Text>Equipment: {exercise.equipment}</Text>
           </Box>
+        </Link>  
         ))}
       </SimpleGrid>
     </Box>
