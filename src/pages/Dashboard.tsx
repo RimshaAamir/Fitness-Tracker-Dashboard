@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { fetchAllExercises, fetchExercisesByName, fetchExercisesByBodyPart, fetchExercisesByEquipment, fetchEquipmentList, fetchTargetList, fetchBodyPartList  } from "../api/exerciseApi";
-import { Box, Spinner, SimpleGrid, Text, Input, VStack } from "@chakra-ui/react";
+import { Box, Spinner, SimpleGrid, Text, Input, VStack, Button } from "@chakra-ui/react";
 import { Select } from "@chakra-ui/select";
 import { Link } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
+import { SignOutButton, SignInButton } from "@clerk/clerk-react";
 
 interface Exercise {
   id: string;
@@ -13,6 +15,7 @@ interface Exercise {
 }
 
 function Dashboard() {
+  const { isSignedIn } = useAuth();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,10 +75,21 @@ function Dashboard() {
 
   return (
     <Box p={4}>
-      <Text fontSize="xl" fontWeight="bold">
-        Exercises
-      </Text>
-      <VStack align="start" mt={2}>
+      <VStack align="start" >
+        <Box display="flex" justifyContent="space-between" w="100%">
+          <Text fontSize="xl" fontWeight="bold">
+            Exercises
+          </Text>
+          {isSignedIn ? (
+            <SignOutButton>
+              <Button colorScheme="red">Sign Out</Button>
+            </SignOutButton>
+          ) : (
+            <SignInButton mode="modal">
+              <Button colorScheme="blue">Sign In with Google</Button>
+            </SignInButton>
+          )}
+        </Box>
         <Input
           placeholder="Search for exercises (e.g., pushups)"
           value={search}
@@ -138,6 +152,11 @@ function Dashboard() {
             </option>
           ))}
         </Select>
+        {isSignedIn && (
+          <Link to="/workouts">
+            <Button colorScheme="teal">Go to My Workouts</Button>
+          </Link>
+        )}
       </VStack>
       {loading && <Spinner mt={4} />}
       {error && <Text color="red" mt={2}>{error}</Text>}
