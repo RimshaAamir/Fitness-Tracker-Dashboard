@@ -77,19 +77,18 @@ function Dashboard() {
     loadExercises();
   }, [search, bodyPart, equipment, target]);
 
- const handleToggleSave = (exercise: Exercise) => {
-  if (!user?.id) return;
-
-  setSavedExercises((prev) => {
-    if (prev.includes(exercise.id)) {
-      removeExercise(user.id, exercise.id);
-      return prev.filter((id) => id !== exercise.id);
-    } else {
-      saveExercise(user.id, exercise);
-      return [...prev, exercise.id];
-    }
-  });
-};
+  const handleToggleSave = (exercise: Exercise) => {
+    if (!user?.id) return;
+    setSavedExercises((prev) => {
+      if (prev.includes(exercise.id)) {
+        removeExercise(user.id, exercise.id);
+        return prev.filter((id) => id !== exercise.id);
+      } else {
+        saveExercise(user.id, exercise);
+        return [...prev, exercise.id];
+      }
+    });
+  };
 
   return (
     <Box p={4}>

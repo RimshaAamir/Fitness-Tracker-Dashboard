@@ -1,27 +1,20 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { fetchExerciseById, fetchExercisesByTarget } from "../api/exerciseApi";
 import { Box, Heading, Text, Image, Spinner, VStack, SimpleGrid, Button} from "@chakra-ui/react";
-import { useUser } from '@clerk/clerk-react';
-import { saveExercise } from '../utils/savedExercises';
-
-interface Exercise {
-  id: string;
-  name: string;
-  target: string;
-  equipment: string;
-  bodyPart: string;
-  gifUrl: string;
-  instructions: string[];
-}
+import { useAuth, useUser } from '@clerk/clerk-react';
+import { saveExercise, removeExercise, getSavedExercises } from '../utils/savedExercises';
+import type { Exercise } from "../types/exercise";
 
 function ExerciseDetails() {
   const { id } = useParams<{ id: string }>();
-  const { user, isSignedIn } = useUser();
+  const { user } = useUser();
+  const { isSignedIn } = useAuth();
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [suggestedExercises, setSuggestedExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [savedExercises, setSavedExercises] = useState<string[]>([]);
 
   useEffect(() => {
     const loadExercise = async () => {
@@ -51,11 +44,26 @@ function ExerciseDetails() {
     loadExercise();
   }, [id]);
 
-  const handleSaveExercise = () => {
-    if (isSignedIn && user?.id && exercise) {
-      saveExercise(user.id, exercise);
-      alert(`${exercise.name} saved to My Workouts!`);
+
+    useEffect(() => {
+    if (isSignedIn && user?.id) {
+      const saved = getSavedExercises(user.id).map(ex => ex.id);
+      setSavedExercises(saved);
     }
+  }, [isSignedIn, user]);
+
+
+  const handleToggleSave = (exercise: Exercise) => {
+    if (!user?.id) return;
+    setSavedExercises((prev) => {
+      if (prev.includes(exercise.id)) {
+        removeExercise(user.id, exercise.id);
+        return prev.filter((id) => id !== exercise.id);
+      } else {
+        saveExercise(user.id, exercise);
+        return [...prev, exercise.id];
+      }
+    });
   };
 
   if (loading) return <Spinner mt={4} />;
@@ -79,21 +87,35 @@ function ExerciseDetails() {
           </VStack>
         </Box>
         {isSignedIn && (
-          <Button mt={4} colorScheme="green" onClick={handleSaveExercise}>
-            Save to My Workouts
-          </Button>
+          <Button mt={4} colorScheme="green" onClick={() => handleToggleSave(exercise)}
+          >
+          {savedExercises.includes(exercise.id) ? 'Saved' : 'Save to My Workouts'}
+                    </Button>
         )}
         {suggestedExercises.length > 0 && (
           <Box mt={6}>
             <Text fontSize="lg" fontWeight="bold">Suggested Exercises</Text>
             <SimpleGrid columns={[1, 2]} mt={2} >
               {suggestedExercises.map((ex) => (
-                <Box key={ex.id} p={3} borderWidth="1px" rounded="md">
-                  <Text fontWeight="bold">{ex.name}</Text>
-                  <Text>Target: {ex.target}</Text>
-                  <Text>Equipment: {ex.equipment}</Text>
-                </Box>
-              ))}
+                  <Box key={ex.id} p={3} borderWidth="1px" rounded="md">
+                    <Link to={`/exercise/${ex.id}`}>
+                      <Text fontWeight="bold">{ex.name}</Text>
+                      <Text>Body Part: {ex.bodyPart}</Text>
+                      <Text>Target: {ex.target}</Text>
+                      <Text>Equipment: {ex.equipment}</Text>
+                    </Link>
+                    {isSignedIn && (
+                      <Button
+                        mt={2}
+                        size="sm"
+                        colorScheme={savedExercises.includes(ex.id) ? 'gray' : 'green'}
+                        onClick={() => handleToggleSave(ex)}
+                      >
+                        {savedExercises.includes(ex.id) ? 'Saved' : 'Save to My Workouts'}
+                      </Button>
+                    )}
+                  </Box>
+                ))}
             </SimpleGrid>
           </Box>
         )}
