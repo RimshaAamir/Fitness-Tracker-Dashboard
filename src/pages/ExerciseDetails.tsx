@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchExerciseById, fetchExercisesByTarget } from "../api/exerciseApi";
-import { Box, Heading, Text, Image, Spinner, VStack, SimpleGrid } from "@chakra-ui/react";
+import { Box, Heading, Text, Image, Spinner, VStack, SimpleGrid, Button} from "@chakra-ui/react";
+import { useUser } from '@clerk/clerk-react';
+import { saveExercise } from '../utils/savedExercises';
 
 interface Exercise {
   id: string;
@@ -15,6 +17,7 @@ interface Exercise {
 
 function ExerciseDetails() {
   const { id } = useParams<{ id: string }>();
+  const { user, isSignedIn } = useUser();
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [suggestedExercises, setSuggestedExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +51,13 @@ function ExerciseDetails() {
     loadExercise();
   }, [id]);
 
+  const handleSaveExercise = () => {
+    if (isSignedIn && user?.id && exercise) {
+      saveExercise(user.id, exercise);
+      alert(`${exercise.name} saved to My Workouts!`);
+    }
+  };
+
   if (loading) return <Spinner mt={4} />;
   if (error) return <Text color="red" mt={2}>{error}</Text>;
   if (!exercise) return <Text mt={2}>Exercise not found</Text>;
@@ -68,6 +78,11 @@ function ExerciseDetails() {
             ))}
           </VStack>
         </Box>
+        {isSignedIn && (
+          <Button mt={4} colorScheme="green" onClick={handleSaveExercise}>
+            Save to My Workouts
+          </Button>
+        )}
         {suggestedExercises.length > 0 && (
           <Box mt={6}>
             <Text fontSize="lg" fontWeight="bold">Suggested Exercises</Text>
