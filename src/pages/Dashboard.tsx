@@ -4,7 +4,7 @@ import { Box, Spinner, SimpleGrid, Text, Input, VStack, Button } from '@chakra-u
 import { Select } from '@chakra-ui/select';
 import { Link } from 'react-router-dom';
 import { SignInButton, SignOutButton, useAuth, useUser } from '@clerk/clerk-react';
-import { saveExercise } from '../utils/savedExercises';
+import { saveExercise, removeExercise, getSavedExercises } from '../utils/savedExercises';
 import type { Exercise } from '../types/exercise';
 
 function Dashboard() {
@@ -41,6 +41,14 @@ function Dashboard() {
   loadFilterLists();
   }, []);
 
+    useEffect(() => {
+    if (isSignedIn && user?.id) {
+      const saved = getSavedExercises(user.id).map(ex => ex.id);
+      setSavedExercises(saved);
+    }
+  }, [isSignedIn, user]);
+
+
   useEffect(() => {
     const loadExercises = async () => {
       setLoading(true);
@@ -74,10 +82,9 @@ function Dashboard() {
 
   setSavedExercises((prev) => {
     if (prev.includes(exercise.id)) {
-      // remove
+      removeExercise(user.id, exercise.id);
       return prev.filter((id) => id !== exercise.id);
     } else {
-      // save
       saveExercise(user.id, exercise);
       return [...prev, exercise.id];
     }
