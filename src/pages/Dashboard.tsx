@@ -1,21 +1,15 @@
-import { useEffect, useState } from "react";
-import { fetchAllExercises, fetchExercisesByName, fetchExercisesByBodyPart, fetchExercisesByEquipment, fetchEquipmentList, fetchTargetList, fetchBodyPartList  } from "../api/exerciseApi";
-import { Box, Spinner, SimpleGrid, Text, Input, VStack, Button } from "@chakra-ui/react";
-import { Select } from "@chakra-ui/select";
-import { Link } from "react-router-dom";
-import { useAuth } from "@clerk/clerk-react";
-import { SignOutButton, SignInButton } from "@clerk/clerk-react";
-
-interface Exercise {
-  id: string;
-  name: string;
-  target: string;
-  equipment: string;
-  bodyPart: string;
-}
+import { useEffect, useState } from 'react';
+import { fetchAllExercises, fetchExercisesByName, fetchExercisesByBodyPart, fetchExercisesByEquipment, fetchEquipmentList, fetchTargetList, fetchBodyPartList } from '../api/exerciseApi';
+import { Box, Spinner, SimpleGrid, Text, Input, VStack, Button } from '@chakra-ui/react';
+import { Select } from '@chakra-ui/select';
+import { Link } from 'react-router-dom';
+import { SignInButton, SignOutButton, useAuth, useUser } from '@clerk/clerk-react';
+import { saveExercise } from '../utils/savedExercises';
+import type { Exercise } from '../types/exercise';
 
 function Dashboard() {
   const { isSignedIn } = useAuth();
+  const { user } = useUser();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +20,8 @@ function Dashboard() {
   const [equipmentList, setEquipmentList] = useState<string[]>([]);
   const [bodyPartList, setBodyPartList] = useState<string[]>([]);
   const [targetList, setTargetList] = useState<string[]>([]);
+  const [savedExercises, setSavedExercises] = useState<string[]>([]);
+
 
   useEffect(() => {
   const loadFilterLists = async () => {
@@ -72,6 +68,21 @@ function Dashboard() {
     };
     loadExercises();
   }, [search, bodyPart, equipment, target]);
+
+ const handleToggleSave = (exercise: Exercise) => {
+  if (!user?.id) return;
+
+  setSavedExercises((prev) => {
+    if (prev.includes(exercise.id)) {
+      // remove
+      return prev.filter((id) => id !== exercise.id);
+    } else {
+      // save
+      saveExercise(user.id, exercise);
+      return [...prev, exercise.id];
+    }
+  });
+};
 
   return (
     <Box p={4}>
@@ -165,14 +176,24 @@ function Dashboard() {
       )}
       <SimpleGrid columns={[1, 2]} mt={4}>
         {exercises.map((exercise) => (
-          <Link key={exercise.id} to={`/exercise/${exercise.id}`}>
-          <Box p={3} borderWidth="1px" rounded="md" _hover={{ bg: "gray.100" }}>
-            <Text fontWeight="bold">{exercise.name}</Text>
-            <Text>Body Part: {exercise.bodyPart}</Text>
-            <Text>Target: {exercise.target}</Text>
-            <Text>Equipment: {exercise.equipment}</Text>
+          <Box key={exercise.id} p={3} borderWidth="1px" rounded="md">
+            <Link to={`/exercise/${exercise.id}`}>
+              <Text fontWeight="bold">{exercise.name}</Text>
+              <Text>Body Part: {exercise.bodyPart}</Text>
+              <Text>Target: {exercise.target}</Text>
+              <Text>Equipment: {exercise.equipment}</Text>
+            </Link>
+            {isSignedIn && (
+              <Button
+                mt={2}
+                size="sm"
+                colorScheme={savedExercises.includes(exercise.id) ? 'gray' : 'green'}
+                onClick={() => handleToggleSave(exercise)}
+              >
+                {savedExercises.includes(exercise.id) ? 'Saved' : 'Save to My Workouts'}
+              </Button>
+            )}
           </Box>
-        </Link>  
         ))}
       </SimpleGrid>
     </Box>
