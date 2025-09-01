@@ -29,6 +29,7 @@ import type { Exercise } from '../types/exercise';
 function Dashboard() {
   const { isSignedIn } = useAuth();
   const { user } = useUser();
+  const [allExercises, setAllExercises] = useState<Exercise[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [exerciseImages, setExerciseImages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -41,6 +42,8 @@ function Dashboard() {
   const [bodyPartList, setBodyPartList] = useState<string[]>([]);
   const [targetList, setTargetList] = useState<string[]>([]);
   const [savedExercises, setSavedExercises] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+  const pageSize = 9; 
 
   useEffect(() => {
     const loadFilterLists = async () => {
@@ -60,7 +63,7 @@ function Dashboard() {
     loadFilterLists();
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     if (isSignedIn && user?.id) {
       const saved = getSavedExercises(user.id).map(ex => ex.id);
       setSavedExercises(saved);
@@ -79,22 +82,24 @@ function Dashboard() {
         } else if (equipment) {
           data = await fetchExercisesByEquipment(equipment);
         } else if (target) {
-        data = await fetchAllExercises();
-        data = data.filter((exercise: Exercise) => exercise.target === target);
-      } else {
+          data = await fetchAllExercises();
+          data = data.filter((exercise: Exercise) => exercise.target === target);
+        } else {
           data = await fetchAllExercises();
         }
-        data = data.slice(0, 10); 
-        setExercises(data);
+
+        setAllExercises(data);
         setError(null);
+        setPage(1); 
+        const firstPageData = data.slice(0, pageSize);
         const imageMap: Record<string, string> = {};
         await Promise.all(
-          data.map(async (ex: Exercise) => {
+          firstPageData.map(async (ex: Exercise) => {
             try {
               const img = await fetchExerciseImage(360, ex.id);
               imageMap[ex.id] = img;
             } catch {
-              imageMap[ex.id] = ""; 
+              imageMap[ex.id] = "";
             }
           })
         );
@@ -107,6 +112,30 @@ function Dashboard() {
     };
     loadExercises();
   }, [search, bodyPart, equipment, target]);
+
+  useEffect(() => {
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const currentPageData = allExercises.slice(start, end);
+    setExercises(currentPageData);
+    const loadImages = async () => {
+      const imageMap: Record<string, string> = {};
+      await Promise.all(
+        currentPageData.map(async (ex: Exercise) => {
+          if (!exerciseImages[ex.id]) {
+            try {
+              const img = await fetchExerciseImage(360, ex.id);
+              imageMap[ex.id] = img;
+            } catch {
+              imageMap[ex.id] = "";
+            }
+          }
+        })
+      );
+      setExerciseImages(prev => ({ ...prev, ...imageMap }));
+    };
+    if (currentPageData.length > 0) loadImages();
+  }, [page, allExercises]);
 
   const handleToggleSave = (exercise: Exercise) => {
     if (!user?.id) return;
@@ -121,9 +150,12 @@ function Dashboard() {
     });
   };
 
+  const totalPages = Math.ceil(allExercises.length / pageSize);
+
   return (
     <Box p={6} bgGradient="linear(to-b, gray.50, white)" minH="100vh">
-      <VStack align="start" >
+      {/* HEADER */}
+      <VStack align="start">
         <Flex justify="space-between" w="100%" align="center">
           <Text fontSize="2xl" fontWeight="bold" bgGradient="linear(to-r, teal.400, blue.500)" bgClip="text">
             Exercise Library
@@ -143,6 +175,7 @@ function Dashboard() {
           )}
         </Flex>
 
+        {/* FILTERS */}
         <Flex wrap="wrap" gap={4}>
           <Input
             placeholder="Search exercises (e.g., pushups)"
@@ -222,6 +255,7 @@ function Dashboard() {
         </Flex>
       </VStack>
 
+      {/* RESULTS */}
       {loading && <Spinner mt={6} size="xl" color="teal.400" />}
       {error && <Text color="red.500" mt={4}>{error}</Text>}
       {!loading && !error && exercises.length === 0 && (
@@ -274,6 +308,26 @@ function Dashboard() {
           </Box>
         ))}
       </SimpleGrid>
+
+      {totalPages > 1 && (
+        <Flex justify="center" mt={8} gap={4} align="center">
+          <Button
+            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+            disabled={page === 1}
+          >
+            Previous
+          </Button>
+          <Text>
+            Page {page} of {totalPages}
+          </Text>
+          <Button
+            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+            disabled={page === totalPages}
+          >
+            Next
+          </Button>
+        </Flex>
+      )}
     </Box>
   );
 }
