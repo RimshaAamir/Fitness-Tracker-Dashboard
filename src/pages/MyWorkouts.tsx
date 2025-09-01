@@ -34,7 +34,6 @@ function MyWorkouts() {
     setFormExerciseId(formExerciseId === exerciseId ? null : exerciseId);
   };
 
-  // 🔹 Prevent errors if user.id not ready
   if (!isSignedIn || !user?.id) {
     return <Text>Please sign in to view your workouts.</Text>;
   }

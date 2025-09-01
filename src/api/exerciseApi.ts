@@ -57,3 +57,23 @@ export const fetchExercisesByTarget = async (target: string) => {
   const response = await api.get(`/exercises/target/${target}`);
   return response.data;
 };
+
+export const fetchExerciseImage = async (resolution: number, exerciseId: string) => {
+  const response = await api.get(`/image`, {
+    params: {
+      resolution,
+      exerciseId,
+    },
+    responseType: "arraybuffer", 
+  });
+
+  const binary = new Uint8Array(response.data);   // Convert binary data to base64 so it can be used as <img src="..." />
+  let binaryString = "";
+  for (let i = 0; i < binary.length; i++) {
+    binaryString += String.fromCharCode(binary[i]);
+  }
+  const base64Image = btoa(binaryString);
+  const contentType = response.headers["content-type"] || "image/gif";
+  
+  return `data:${contentType};base64,${base64Image}`;
+};
