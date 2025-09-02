@@ -129,7 +129,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchExerciseById, fetchExercisesByTarget } from "../api/exerciseApi";
+import { fetchAllExercises, fetchExerciseById, fetchExercisesByTarget } from "../api/exerciseApi";
 import { Box } from "@chakra-ui/react";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { saveExercise, removeExercise, getSavedExercises } from "../utils/savedExercises";
@@ -160,7 +160,8 @@ function ExerciseDetails() {
       try {
         const exerciseData = await fetchExerciseById(id);
         setExercise(exerciseData);
-        const suggested = await fetchExercisesByTarget(exerciseData.target);
+        // const suggested = await fetchExercisesByTarget(exerciseData.target);
+        const suggested = await fetchAllExercises();
         const filteredSuggestions = suggested
           .filter((ex: Exercise) => ex.id !== id)
           .slice(0, 10);
