@@ -2,7 +2,7 @@ import { Box, Text, Button, Flex, Icon } from "@chakra-ui/react";
 import { FaUser, FaBullseye, FaDumbbell } from "react-icons/fa";
 import type { Exercise } from "../../types/exercise";
 import { getLogs } from "../../utils/progressLogs";
-import ProgressForm from "./ProgressForm";
+import ProgressForm from "../Workouts/ProgressForm";
 
 interface ExerciseCardProps {
   exercise: Exercise;

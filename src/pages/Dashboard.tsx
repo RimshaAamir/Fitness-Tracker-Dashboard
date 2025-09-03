@@ -10,10 +10,10 @@ import {
   fetchExerciseImage,
 } from '../api/exerciseApi';
 import { saveExercise, removeExercise, getSavedExercises } from '../utils/savedExercises';
-import Header from '../components/dashboard/DashboardHeader.tsx';
-import Filters from '../components/dashboard/Filters.tsx';
-import Results from '../components/dashboard/CardsList.tsx';
-import Pagination from '../components/dashboard/Pagination.tsx';
+import Header from '../components/Dashboard/DashboardHeader.tsx';
+import Filters from '../components/Dashboard/Filters.tsx';
+import Results from '../components/Dashboard/CardsList.tsx';
+import Pagination from '../components/Dashboard/Pagination.tsx';
 import { Box } from '@chakra-ui/react';
 import type { Exercise } from '../types/exercise';
 import { useUser } from '@clerk/clerk-react';

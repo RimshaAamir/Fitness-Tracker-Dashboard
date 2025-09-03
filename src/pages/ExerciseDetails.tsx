@@ -5,9 +5,9 @@ import { Box } from "@chakra-ui/react";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { saveExercise, removeExercise, getSavedExercises } from "../utils/savedExercises";
 import type { Exercise } from "../types/exercise";
-import ExerciseDetailsMainPage from "../components/exercises/ExerciseDetailsSection.tsx";
-import SuggestedExercises from "../components/exercises/SuggestedExercises.tsx";
-import StatusMessage from "../components/exercises/StatusMessage.tsx";
+import ExerciseDetailsMainPage from "../components/Exercises/ExerciseDetailsSection.tsx";
+import SuggestedExercises from "../components/Exercises/SuggestedExercises.tsx";
+import StatusMessage from "../components/Exercises/StatusMessage.tsx";
 
 function ExerciseDetails() {
   const { id } = useParams<{ id: string }>();
