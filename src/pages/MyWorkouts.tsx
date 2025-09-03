@@ -5,8 +5,8 @@ import type { Exercise } from "../types/exercise";
 import type { UserResource } from "@clerk/types"; 
 import { getSavedExercises, removeExercise } from "../utils/savedExercises";
 import { WorkoutContext } from "../context/WorkoutContext";
-import WorkoutHeader from "../components/workouts/WorkoutHeader";
-import ExerciseCard from "../components/workouts/ExerciseCard";
+import WorkoutHeader from "../components/workouts/WorkoutHeader.tsx";
+import ExerciseCard from "../components/workouts/ExerciseCard.tsx";
 
 function MyWorkouts() {
   const { user } = useUser();
