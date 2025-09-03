@@ -4,6 +4,7 @@ import type { Exercise } from "../../types/exercise";
 
 interface ExerciseDetailsMainProps {
   exercise: Exercise;
+  exerciseImage: string;
   savedExercises: string[];
   handleToggleSave: (exercise: Exercise) => void;
   isSignedIn: boolean;
@@ -11,18 +12,30 @@ interface ExerciseDetailsMainProps {
 
 function ExerciseDetailsMainPage({
   exercise,
+  exerciseImage,
   savedExercises,
   handleToggleSave,
   isSignedIn,
 }: ExerciseDetailsMainProps) {
   return (
-    <Box w="100%" maxW="1200px" mx="auto" mb={8} p={6} bg="gray.800" borderRadius="2xl" borderColor="gray.600" borderWidth="1px" _hover={{ borderColor: "red.500", boxShadow: "0 0 0 1px red.500" }}>
+    <Box
+      w="100%"
+      maxW="1200px"
+      mx="auto"
+      mb={8}
+      p={6}
+      bg="gray.800"
+      borderRadius="2xl"
+      borderColor="gray.600"
+      borderWidth="1px"
+      _hover={{ borderColor: "red.500", boxShadow: "0 0 0 1px red.500" }}
+    >
       <VStack align="center" gap={6} color="white">
         <Heading size="2xl" textShadow="0 0 5px rgba(0, 0, 0, 0.7)" textAlign="center">
           {exercise.name}
         </Heading>
         <Image
-          src={exercise.gifUrl || "/exercise.jpg"}
+          src={exerciseImage || "/exercise.jpg"}
           alt={exercise.name}
           w="100%"
           maxH="600px"
@@ -30,15 +43,7 @@ function ExerciseDetailsMainPage({
           boxShadow="0 4px 12px rgba(0, 0, 0, 0.4)"
           objectFit="contain"
         />
-        <HStack
-          wrap="wrap"
-          justify="center"
-          gap={6}
-          p={4}
-          bg="gray.700"
-          borderRadius="xl"
-          w="full"
-        >
+        <HStack wrap="wrap" justify="center" gap={6} p={4} bg="gray.700" borderRadius="xl" w="full">
           <Flex align="center" minW="200px">
             <Icon as={FaUser} mr={2} color="red.500" boxSize={5} />
             <Text fontSize="md" color="gray.300">
@@ -58,6 +63,8 @@ function ExerciseDetailsMainPage({
             </Text>
           </Flex>
         </HStack>
+
+        {/* Instructions */}
         <Box w="full" p={4} bg="gray.700" borderRadius="xl">
           <Text fontWeight="bold" fontSize="lg" mb={3} color="white">
             Instructions
@@ -75,6 +82,8 @@ function ExerciseDetailsMainPage({
             ))}
           </VStack>
         </Box>
+
+        {/* Save Button */}
         {isSignedIn && (
           <Button
             size="lg"

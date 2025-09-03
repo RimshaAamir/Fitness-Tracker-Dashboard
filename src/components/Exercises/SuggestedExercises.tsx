@@ -5,12 +5,14 @@ import type { Exercise } from "../../types/exercise";
 
 interface SuggestedExercisesProps {
   suggestedExercises: Exercise[];
+  suggestedImages: Record<string, string>;
   savedExercises: string[];
   handleToggleSave: (exercise: Exercise) => void;
 }
 
 function SuggestedExercises({
   suggestedExercises,
+  suggestedImages,
   savedExercises,
   handleToggleSave,
 }: SuggestedExercisesProps) {
@@ -36,7 +38,7 @@ function SuggestedExercises({
           >
             <Link to={`/exercise/${ex.id}`}>
               <Image
-                src={ex.gifUrl || "/exercise.jpg"}
+                src={suggestedImages[ex.id] || "/exercise.jpg"}
                 alt={ex.name}
                 borderRadius="lg"
                 mb={3}
