@@ -29,6 +29,7 @@ function Header() {
         <HStack gap={{ base: 4, md: 8 }} align="center">
           <Link
             as={NavLink}
+            // @ts-ignore
             to="/"
             display="flex"
             alignItems="center"
@@ -42,6 +43,7 @@ function Header() {
 
           <Link
             as={NavLink}
+            // @ts-ignore
             to="/workouts"
             display="flex"
             alignItems="center"

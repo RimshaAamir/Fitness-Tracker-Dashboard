@@ -25,16 +25,16 @@ function Footer() {
 
         {/* Social Links */}
         <Flex gap={5}>
-          <Link href="https://github.com/RimshaAamir" isExternal>
+          <Link href="https://github.com/RimshaAamir" target="_blank" rel="noopener noreferrer">
             <Icon as={FaGithub} boxSize={6} _hover={{ color: "red.400" }} />
           </Link>
-          <Link href="https://twitter.com" isExternal>
+          <Link href="https://twitter.com" target="_blank" rel="noopener noreferrer">
             <Icon as={FaTwitter} boxSize={6} _hover={{ color: "red.400" }} />
           </Link>
-          <Link href="https://instagram.com" isExternal>
+          <Link href="https://instagram.com" target="_blank" rel="noopener noreferrer">
             <Icon as={FaInstagram} boxSize={6} _hover={{ color: "red.400" }} />
           </Link>
-          <Link href="https://linkedin.com" isExternal>
+          <Link href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
             <Icon as={FaLinkedin} boxSize={6} _hover={{ color: "red.400" }} />
           </Link>
         </Flex>
