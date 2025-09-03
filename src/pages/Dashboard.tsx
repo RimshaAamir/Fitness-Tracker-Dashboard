@@ -17,9 +17,11 @@ import Pagination from '../components/Dashboard/Pagination';
 import { Box } from '@chakra-ui/react';
 import type { Exercise } from '../types/exercise';
 import { useUser } from '@clerk/clerk-react';
+import { useColorMode } from '../components/ui/color-mode';
 
 function Dashboard() {
   const { user } = useUser();
+  const { setColorMode } = useColorMode();
   const [allExercises, setAllExercises] = useState<Exercise[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [exerciseImages, setExerciseImages] = useState<Record<string, string>>({});
@@ -35,6 +37,10 @@ function Dashboard() {
   const [savedExercises, setSavedExercises] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const pageSize = 9;
+
+  useEffect(() => {
+    setColorMode('dark');
+  }, [setColorMode]);
 
   useEffect(() => {
     const loadFilterLists = async () => {
@@ -136,7 +142,7 @@ function Dashboard() {
   const totalPages = Math.ceil(allExercises.length / pageSize);
 
   return (
-    <Box p={6} bgGradient="linear(to-b, gray.50, white)" minH="100vh">
+    <Box p={6} bg="black" minH="100vh" color="white">
       <Header />
       <Filters
         search={search}
