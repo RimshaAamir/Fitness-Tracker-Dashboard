@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { Box, SimpleGrid, Text } from "@chakra-ui/react";
+import { Box, SimpleGrid, Text, Flex } from "@chakra-ui/react";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import type { Exercise } from "../types/exercise";
 import type { UserResource } from "@clerk/types"; 
 import { getSavedExercises, removeExercise } from "../utils/savedExercises";
 import { WorkoutContext } from "../context/WorkoutContext";
-import WorkoutHeader from "../components/Workouts/WorkoutHeader";
-import ExerciseCard from "../components/Workouts/ExerciseCard";
+import WorkoutHeader from "../components/workouts/WorkoutHeader";
+import ExerciseCard from "../components/workouts/ExerciseCard";
 
 function MyWorkouts() {
   const { user } = useUser();
@@ -36,7 +36,13 @@ function MyWorkouts() {
   };
 
   if (!isSignedIn || !user?.id) {
-    return <Text mt={4}> No exercises saved. Add some from the Dashboard!</Text>;
+    return (
+      <Box p={6} bg="black" minH="100vh" color="white">
+        <Text mt={4} color="gray.300" textAlign="center" fontSize="lg">
+          No exercises saved. Add some from the Dashboard!
+        </Text>
+      </Box>
+    );
   }
 
   return (
@@ -49,24 +55,30 @@ function MyWorkouts() {
         toggleForm,
       }}
     >
-      <Box>
+      <Box bg="black" minH="100vh" color="white">
         <WorkoutHeader user={user as UserResource} />
-        {exercises.length === 0 ? (
-              <Text mt={4}>No exercises saved. Add some from the Dashboard!</Text>
-        ) : (
-          <SimpleGrid columns={[1, 2]} mt={4}>
-            {exercises.map((exercise) => (
-              <ExerciseCard
-                key={exercise.id}
-                exercise={exercise}
-                userId={user.id}
-                formExerciseId={formExerciseId}
-                toggleForm={toggleForm}
-                remove={remove}
-              />
-            ))}
-          </SimpleGrid>
-        )}
+        <Box p={6} >
+          {exercises.length === 0 ? (
+            <Text mt={6} color="gray.300" textAlign="center" fontSize="lg">
+              No exercises saved. Add some from the Dashboard!
+            </Text>
+          ) : (
+            <Flex justify="center">
+              <SimpleGrid columns={[1, 2, 3]} mt={6} gap={6} maxW="1200px">
+                {exercises.map((exercise) => (
+                  <ExerciseCard
+                    key={exercise.id}
+                    exercise={exercise}
+                    userId={user.id}
+                    formExerciseId={formExerciseId}
+                    toggleForm={toggleForm}
+                    remove={remove}
+                  />
+                ))}
+              </SimpleGrid>
+            </Flex>
+          )}
+        </Box>  
       </Box>
     </WorkoutContext.Provider>
   );

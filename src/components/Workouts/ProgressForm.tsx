@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Box, Button, Input, VStack } from "@chakra-ui/react";
-import { addLog } from "../utils/progressLogs";
-import { useWorkoutContext } from "../context/WorkoutContext";
+import { addLog } from "../../utils/progressLogs";
+import { useWorkoutContext } from "../../context/WorkoutContext";
 
 function ProgressForm() {
   const [reps, setReps] = useState("");

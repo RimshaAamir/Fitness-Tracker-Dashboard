@@ -76,8 +76,8 @@ function Filters({
   return (
     <Box bg="black" color="white" p={6} w="100%">
       <Flex direction="column" align="center" gap={6} maxW="800px" mx="auto">
-        {/* Search Bar Row - Half screen width */}
-        <Box w="50%">
+        {/* Search Bar Row*/}
+        <Box w="100%" lg={{w: "50%"}} >
           <Input
             placeholder="Search exercises (e.g., pushups)"
             value={search}

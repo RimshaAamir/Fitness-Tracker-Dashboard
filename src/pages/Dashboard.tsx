@@ -9,11 +9,11 @@ import {
   fetchBodyPartList,
   fetchExerciseImage,
 } from '../api/exerciseApi';
-import { saveExercise, removeExercise } from '../utils/savedExercises';
-import Header from '../components/Dashboard/Header';
-import Filters from '../components/Dashboard/Filters';
-import Results from '../components/Dashboard/Results';
-import Pagination from '../components/Dashboard/Pagination';
+import { saveExercise, removeExercise, getSavedExercises } from '../utils/savedExercises';
+import Header from '../components/dashboard/DashboardHeader';
+import Filters from '../components/dashboard/Filters';
+import Results from '../components/dashboard/CardsList';
+import Pagination from '../components/dashboard/Pagination';
 import { Box } from '@chakra-ui/react';
 import type { Exercise } from '../types/exercise';
 import { useUser } from '@clerk/clerk-react';
@@ -23,6 +23,7 @@ function Dashboard() {
   const { user } = useUser();
   const { setColorMode } = useColorMode();
   const [allExercises, setAllExercises] = useState<Exercise[]>([]);
+  const {isSignedIn} = useUser();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [exerciseImages, setExerciseImages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -59,6 +60,14 @@ function Dashboard() {
     };
     loadFilterLists();
   }, []);
+
+
+  useEffect(() => {
+    if (isSignedIn && user?.id) {
+      const saved = getSavedExercises(user.id).map((ex) => ex.id);
+      setSavedExercises(saved);
+    }
+  }, [isSignedIn, user]);
 
   useEffect(() => {
     const loadExercises = async () => {
@@ -142,8 +151,9 @@ function Dashboard() {
   const totalPages = Math.ceil(allExercises.length / pageSize);
 
   return (
-    <Box p={6} bg="black" minH="100vh" color="white">
+    <Box bg="black" minH="100vh" color="white">
       <Header />
+      <Box p={6}>
       <Filters
         search={search}
         setSearch={setSearch}
@@ -166,6 +176,7 @@ function Dashboard() {
         handleToggleSave={handleToggleSave}
       />
       <Pagination page={page} setPage={setPage} totalPages={totalPages} />
+      </Box>
     </Box>
   );
 }
