@@ -83,9 +83,6 @@ function Filters({
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
-              setBodyPart("");
-              setEquipment("");
-              setTarget("");
             }}
             size="lg"
             borderRadius="2xl"

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState  , useCallback } from 'react';
 import {
   fetchAllExercises,
   fetchExercisesByName,
@@ -8,6 +8,7 @@ import {
   fetchTargetList,
   fetchBodyPartList,
   fetchExerciseImage,
+  fetchExercisesByTarget,
 } from '../api/exerciseApi';
 import { saveExercise, removeExercise, getSavedExercises } from '../utils/savedExercises';
 import Header from '../components/Dashboard/DashboardHeader.tsx';
@@ -18,6 +19,7 @@ import { Box } from '@chakra-ui/react';
 import type { Exercise } from '../types/exercise';
 import { useUser } from '@clerk/clerk-react';
 import { useColorMode } from '../components/ui/color-mode';
+import useDebounce from '../hooks/useDebounce.ts';
 
 function Dashboard() {
   const { user } = useUser();
@@ -25,7 +27,9 @@ function Dashboard() {
   const [allExercises, setAllExercises] = useState<Exercise[]>([]);
   const {isSignedIn} = useUser();
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [exerciseImages, setExerciseImages] = useState<Record<string, string>>({});
+   const [exerciseImages, setExerciseImages] = useState<
+    Record<string, { url: string | null; isLoading: boolean; isError: boolean }>
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -38,6 +42,7 @@ function Dashboard() {
   const [savedExercises, setSavedExercises] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const pageSize = 9;
+  const debouncedSearch = useDebounce(search, 300); 
 
   useEffect(() => {
     setColorMode('dark');
@@ -69,39 +74,43 @@ function Dashboard() {
     }
   }, [isSignedIn, user]);
 
-  useEffect(() => {
+useEffect(() => {
     const loadExercises = async () => {
       setLoading(true);
       try {
         let data;
-        if (search) {
-          data = await fetchExercisesByName(search);
+        if (debouncedSearch) {
+          console.log("📡 API Call → fetchExercisesByName with:", debouncedSearch);
+          data = await fetchExercisesByName(debouncedSearch);
         } else if (bodyPart) {
           data = await fetchExercisesByBodyPart(bodyPart);
         } else if (equipment) {
           data = await fetchExercisesByEquipment(equipment);
         } else if (target) {
-          data = await fetchAllExercises();
-          data = data.filter((exercise: Exercise) => exercise.target === target);
+          data = await fetchExercisesByTarget(target);
         } else {
           data = await fetchAllExercises();
         }
+        console.log("✅ API Response →", data.length, "items");
         setAllExercises(data);
         setError(null);
-        setPage(1);
         const firstPageData = data.slice(0, pageSize);
-        const imageMap: Record<string, string> = {};
+        const imageMap: Record<string, { url: string | null; isLoading: boolean; isError: boolean }> = {};
         await Promise.all(
           firstPageData.map(async (ex: Exercise) => {
             try {
+              setExerciseImages((prev) => ({
+                ...prev,
+                [ex.id]: { url: null, isLoading: true, isError: false },
+              }));
               const img = await fetchExerciseImage(360, ex.id);
-              imageMap[ex.id] = img;
+              imageMap[ex.id] = { url: img, isLoading: false, isError: false };
             } catch {
-              imageMap[ex.id] = "./exercise.jpg";
+              imageMap[ex.id] = { url: "./exercise.jpg", isLoading: false, isError: true };
             }
           })
         );
-        setExerciseImages(imageMap);
+        setExerciseImages((prev) => ({ ...prev, ...imageMap }));
       } catch {
         setError("Can't load exercises");
       } finally {
@@ -109,7 +118,7 @@ function Dashboard() {
       }
     };
     loadExercises();
-  }, [search, bodyPart, equipment, target]);
+  }, [debouncedSearch, bodyPart, equipment, target]);
 
   useEffect(() => {
     const start = (page - 1) * pageSize;
@@ -117,25 +126,29 @@ function Dashboard() {
     const currentPageData = allExercises.slice(start, end);
     setExercises(currentPageData);
     const loadImages = async () => {
-      const imageMap: Record<string, string> = {};
+      const imageMap: Record<string, { url: string | null; isLoading: boolean; isError: boolean }> = {};
       await Promise.all(
         currentPageData.map(async (ex: Exercise) => {
           if (!exerciseImages[ex.id]) {
             try {
+              setExerciseImages((prev) => ({
+                ...prev,
+                [ex.id]: { url: null, isLoading: true, isError: false },
+              }));
               const img = await fetchExerciseImage(360, ex.id);
-              imageMap[ex.id] = img;
+              imageMap[ex.id] = { url: img, isLoading: false, isError: false };
             } catch {
-              imageMap[ex.id] = "./exercise.jpg";
+              imageMap[ex.id] = { url: "./exercise.jpg", isLoading: false, isError: true };
             }
           }
         })
       );
-      setExerciseImages(prev => ({ ...prev, ...imageMap }));
+      setExerciseImages((prev) => ({ ...prev, ...imageMap }));
     };
     if (currentPageData.length > 0) loadImages();
   }, [page, allExercises]);
 
-  const handleToggleSave = (exercise: Exercise) => {
+  const handleToggleSave = useCallback((exercise: Exercise) => {
     if (!user?.id) return;
     setSavedExercises((prev) => {
       if (prev.includes(exercise.id)) {
@@ -146,7 +159,7 @@ function Dashboard() {
         return [...prev, exercise.id];
       }
     });
-  };
+  }, [user]);
 
   const totalPages = Math.ceil(allExercises.length / pageSize);
 
