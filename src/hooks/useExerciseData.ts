@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   fetchAllExercises,
   fetchExercisesByName,
@@ -12,6 +13,7 @@ interface ExerciseData {
   exercises: Exercise[];
   loading: boolean;
   error: string | null;
+  totalPages: number;
 }
 
 export const useExerciseData = (
@@ -21,48 +23,38 @@ export const useExerciseData = (
   target: string,
   page: number,
   pageSize: number
-): ExerciseData & { totalPages: number } => {
-  const [allExercises, setAllExercises] = useState<Exercise[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+): ExerciseData => {
+  const queryKey = ["exercises", { search, bodyPart, equipment, target }];
 
-  const fetchExercises = useCallback(async () => {
-    setLoading(true);
-    try {
-      let data: Exercise[];
+  const { data = [], isLoading, isError, error } = useQuery<Exercise[]>({
+    queryKey,
+    queryFn: async () => {
       if (search) {
-        data = await fetchExercisesByName(search);
+        return await fetchExercisesByName(search);
       } else if (bodyPart) {
-        data = await fetchExercisesByBodyPart(bodyPart);
+        return await fetchExercisesByBodyPart(bodyPart);
       } else if (equipment) {
-        data = await fetchExercisesByEquipment(equipment);
+        return await fetchExercisesByEquipment(equipment);
       } else if (target) {
-        data = await fetchExercisesByTarget(target);
+        return await fetchExercisesByTarget(target);
       } else {
-        data = await fetchAllExercises();
+        return await fetchAllExercises();
       }
-      setAllExercises(data);
-      setError(null);
-    } catch {
-      setError("Can't load exercises");
-    } finally {
-      setLoading(false);
-    }
-  }, [search, bodyPart, equipment, target]);
-
-  useEffect(() => {
-    fetchExercises();
-  }, [fetchExercises]);
+    },
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    placeholderData: (prev) => prev ?? [],
+  });
 
   const paginatedExercises = useMemo(() => {
     const start = (page - 1) * pageSize;
-    return allExercises.slice(start, start + pageSize);
-  }, [allExercises, page, pageSize]);
+    return data.slice(start, start + pageSize);
+  }, [data, page, pageSize]);
 
   return {
     exercises: paginatedExercises,
-    loading,
-    error,
-    totalPages: Math.ceil(allExercises.length / pageSize),
+    loading: isLoading,
+    error: isError ? (error?.message ?? "Can't load exercises") : null,
+    totalPages: Math.ceil(data.length / pageSize),
   };
 };

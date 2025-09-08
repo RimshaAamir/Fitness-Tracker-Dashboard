@@ -64,7 +64,7 @@ function Dashboard() {
           targetList={targetList}
         />
         <Results
-          loading={loading}
+          loading={loading && exercises.length === 0} 
           error={exerciseError || filterError}
           exercises={exercises}
           exerciseImages={exerciseImages}
